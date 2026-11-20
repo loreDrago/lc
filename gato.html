@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="it">
+<head>
+
+<style>
+  body {
+    margin: 0; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: #0c0a12;
+  }
+  pre {
+    margin: 0; color: #ffaa3c;
+    font: bold min(20px, 2.3vw) / 1.2 ui-monospace, Menlo, Consolas, monospace;
+  }
+</style>
+</head>
+<body>
+<pre id="scena"></pre>
+
+<script>
+const MESSAGE = "miao! ti amo 8 <3";
+
+const FERMO=[
+  String.raw`  /\_/\  `,
+  String.raw` ( o.o ) `,
+  String.raw`  > ^ <  `,
+  String.raw` /|   |\ `,
+  String.raw`(_|___|_)`,
+];
+const PASSO_1 = [...FERMO.slice(0, 4), String.raw`(_/   |_)`];
+const PASSO_2 = [...FERMO.slice(0, 4), String.raw`(_|   \_)`];
+
+const LARGHEZZA=70;
+const ALTEZZA=11;
+const FERMATA=25;     // colonna in cui il gatto si ferma
+
+// Scrive un disegno (lista di righe) nella scena, a partire dalla posizione x, y.
+function disegna(scena, x, y, righe) {
+  righe.forEach((riga, i) => {
+    [...riga].forEach((carattere, j) => {
+      const colonna = x + j;
+      if (carattere !== " " && colonna >= 0 && colonna < LARGHEZZA) {
+        scena[y + i][colonna] = carattere;
+      }
+    });
+  });
+}
+
+let passo = 0;
+
+function aggiorna() {
+  passo++;
+
+  // 1. scena vuota con il pavimento
+  const scena=Array.from({ length: ALTEZZA }, () => Array(LARGHEZZA).fill(" "));
+  scena[ALTEZZA-1].fill("_");
+
+  const x=Math.min(passo-10,FERMATA);
+  const cammina=x<FERMATA;
+  const posa=cammina?[PASSO_1, PASSO_2][passo % 2]:FERMO;
+  disegna(scena, x, 5, posa);
+
+  // 3. quando si è fermato, scrive una lettera per tick nel fumetto
+  if (!cammina) {
+    const lettere = passo - (FERMATA + 10);
+    if (lettere > 0) {
+      const testo = MESSAGE.slice(0, lettere).padEnd(MESSAGE.length);
+      const bordo = "-".repeat(MESSAGE.length + 2);
+      disegna(scena, x + 2, 1, [`.${bordo}.`, `| ${testo} |`, `'${bordo}'`, "   \\"]);
+    }
+  }
+
+  // 4. mostra la scena sulla pagina
+  document.getElementById("scena").textContent = scena.map(r => r.join("")).join("\n");
+}
+
+setInterval(aggiorna, 100);
+</script>
+</body>
+</html>
